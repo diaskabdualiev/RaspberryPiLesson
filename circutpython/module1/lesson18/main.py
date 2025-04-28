@@ -1,19 +1,19 @@
-from mfrc522 import BasicMFRC522
-import time
+import board, busio, digitalio
+from adafruit_pn532.i2c import PN532_I2C
 
-reader = BasicMFRC522()
+# I2C-шина и пин reset
+i2c   = busio.I2C(board.SCL, board.SDA)
+reset = digitalio.DigitalInOut(board.D25)
 
+pn532 = PN532_I2C(i2c, debug=False, reset=reset)
 
-print("[*] Готов к работе (Ctrl-C для выхода)")
-last = None                 # запомним предыдущий UID
+ic, ver, rev, support = pn532.firmware_version
+print(f"PN532 v{ver}.{rev} — IC 0x{ic:x}")
+
+pn532.SAM_configuration()          # включаем чтение карт
+print("Поднесите NFC-метку…")
 
 while True:
-    uid = reader.read_id_no_block()
-    if uid and uid != last: # новый UID
-        print(uid)
-        last = uid
-        # маленький «дебаунс», чтобы не печатать сотни строк в секунду
-        time.sleep(0.15)
-    elif uid is None:
-        last = None         # карта убрана — ждём новую
-    time.sleep(0.02)        # 50 опросов-в-секунду
+    uid = pn532.read_passive_target(timeout=0.5)
+    if uid:
+        print("Найдена карта, UID:", uid.hex())
