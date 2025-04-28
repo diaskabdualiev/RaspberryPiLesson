@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Монитор температуры и влажности</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="refresh" content="10">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .readings {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            margin-top: 30px;
+        }
+        .reading-card {
+            width: 300px;
+            margin: 10px;
+            padding: 20px;
+            border-radius: 8px;
+            color: white;
+        }
+        .temperature {
+            background: linear-gradient(135deg, #FF5722, #FF9800);
+        }
+        .humidity {
+            background: linear-gradient(135deg, #2196F3, #03A9F4);
+        }
+        .reading-value {
+            font-size: 3em;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        .reading-label {
+            font-size: 1.2em;
+        }
+        .info {
+            margin-top: 30px;
+            color: #666;
+        }
+        .status {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 4px;
+            background-color: #f0f0f0;
+        }
+        .time {
+            margin-top: 15px;
+            color: #888;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Монитор температуры и влажности</h1>
+        
+        <div class="readings">
+            <div class="reading-card temperature">
+                <div class="reading-label">Температура</div>
+                <div class="reading-value">{{ temperature }}°C</div>
+            </div>
+            
+            <div class="reading-card humidity">
+                <div class="reading-label">Влажность</div>
+                <div class="reading-value">{{ humidity }}%</div>
+            </div>
+        </div>
+        
+        <div class="status">
+            <p>Статус: {{ status }}</p>
+        </div>
+        
+        <div class="time">
+            <p>Последнее обновление: {{ last_update }}</p>
+        </div>
+        
+        <div class="info">
+            <p>Страница обновляется автоматически каждые 10 секунд</p>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Управление реле</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: center;
+        }
+        .container {
+            margin-top: 50px;
+        }
+        .toggle-button {
+            padding: 20px 40px;
+            font-size: 18px;
+            margin: 20px 0;
+            cursor: pointer;
+            border-radius: 5px;
+            border: none;
+            transition: background-color 0.3s, transform 0.1s;
+        }
+        .toggle-button:active {
+            transform: scale(0.98);
+        }
+        .on {
+            background-color: #4caf50;
+            color: white;
+        }
+        .off {
+            background-color: #f44336;
+            color: white;
+        }
+        .status {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+        .status-indicator {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        .status-on {
+            background-color: #4caf50;
+        }
+        .status-off {
+            background-color: #f44336;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Управление реле</h1>
+        
+        <div class="status">
+            <span class="status-indicator" id="status-indicator"></span>
+            <span id="status-text">Загрузка...</span>
+        </div>
+        
+        <button id="toggle-button" class="toggle-button">Включить</button>
+        
+        <div>
+            <p>Статус реле: <span id="relay-status">Загрузка...</span></p>
+        </div>
+    </div>
+
+    <script>
+        const toggleButton = document.getElementById('toggle-button');
+        const statusText = document.getElementById('status-text');
+        const statusIndicator = document.getElementById('status-indicator');
+        const relayStatus = document.getElementById('relay-status');
+        
+        let currentState = false;
+        
+        // Инициализация состояния при загрузке страницы
+        window.onload = function() {
+            fetchRelayState();
+            // Обновление состояния каждые 5 секунд
+            setInterval(fetchRelayState, 5000);
+        };
+        
+        // Получение текущего состояния реле
+        function fetchRelayState() {
+            fetch('/get_state')
+                .then(response => response.json())
+                .then(data => {
+                    updateInterface(data.state);
+                })
+                .catch(error => {
+                    console.error('Ошибка:', error);
+                    relayStatus.textContent = 'Ошибка соединения';
+                });
+        }
+        
+        // Обновление интерфейса в зависимости от состояния
+        function updateInterface(state) {
+            currentState = state;
+            
+            if (state) {
+                // Реле включено
+                toggleButton.textContent = 'Выключить';
+                toggleButton.classList.remove('on');
+                toggleButton.classList.add('off');
+                statusText.textContent = 'Включено';
+                statusIndicator.classList.remove('status-off');
+                statusIndicator.classList.add('status-on');
+                relayStatus.textContent = 'Цепь замкнута';
+            } else {
+                // Реле выключено
+                toggleButton.textContent = 'Включить';
+                toggleButton.classList.remove('off');
+                toggleButton.classList.add('on');
+                statusText.textContent = 'Выключено';
+                statusIndicator.classList.remove('status-on');
+                statusIndicator.classList.add('status-off');
+                relayStatus.textContent = 'Цепь разомкнута';
+            }
+        }
+        
+        // Переключение состояния реле при нажатии на кнопку
+        toggleButton.addEventListener('click', function() {
+            const newState = !currentState;
+            
+            fetch('/toggle_relay', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ state: newState })
+            })
+            .then(response => response.json())
+            .then(data => {
+                updateInterface(data.state);
+                console.log(data.message);
+            })
+            .catch(error => {
+                console.error('Ошибка:', error);
+                relayStatus.textContent = 'Ошибка соединения';
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MPU6050 3D Визуализация</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+        }
+        canvas {
+            display: block;
+        }
+        #info-panel {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 14px;
+            width: 300px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        td {
+            padding: 5px 0;
+        }
+        .value {
+            text-align: right;
+            font-family: monospace;
+        }
+        h3 {
+            margin: 5px 0;
+            border-bottom: 1px solid #555;
+        }
+    </style>
+</head>
+<body>
+    <div id="info-panel">
+        <h3>MPU6050 Данные</h3>
+        <table>
+            <tr>
+                <td>Акселерометр X:</td>
+                <td class="value" id="accel-x">0.00 м/с²</td>
+            </tr>
+            <tr>
+                <td>Акселерометр Y:</td>
+                <td class="value" id="accel-y">0.00 м/с²</td>
+            </tr>
+            <tr>
+                <td>Акселерометр Z:</td>
+                <td class="value" id="accel-z">0.00 м/с²</td>
+            </tr>
+            <tr>
+                <td>Гироскоп X:</td>
+                <td class="value" id="gyro-x">0.00 °/с</td>
+            </tr>
+            <tr>
+                <td>Гироскоп Y:</td>
+                <td class="value" id="gyro-y">0.00 °/с</td>
+            </tr>
+            <tr>
+                <td>Гироскоп Z:</td>
+                <td class="value" id="gyro-z">0.00 °/с</td>
+            </tr>
+            <tr>
+                <td>Roll:</td>
+                <td class="value" id="roll">0.00°</td>
+            </tr>
+            <tr>
+                <td>Pitch:</td>
+                <td class="value" id="pitch">0.00°</td>
+            </tr>
+            <tr>
+                <td>Температура:</td>
+                <td class="value" id="temp">0.00 °C</td>
+            </tr>
+        </table>
+    </div>
+
+    <script>
+        // Инициализация Three.js
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setClearColor(0x333333);
+        document.body.appendChild(renderer.domElement);
+
+        // Добавление освещения
+        const ambientLight = new THREE.AmbientLight(0x404040);
+        scene.add(ambientLight);
+
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+        directionalLight.position.set(1, 1, 1);
+        scene.add(directionalLight);
+
+        // Создание куба
+        const cubeSize = 4;
+        const geometry = new THREE.BoxGeometry(cubeSize, cubeSize/4, cubeSize*1.5);
+        
+        // Материалы для каждой грани с разными цветами
+        const materials = [
+            new THREE.MeshPhongMaterial({ color: 0xff0000 }), // правая сторона - красная
+            new THREE.MeshPhongMaterial({ color: 0x00ff00 }), // левая сторона - зеленая
+            new THREE.MeshPhongMaterial({ color: 0x0000ff }), // верхняя сторона - синяя
+            new THREE.MeshPhongMaterial({ color: 0xffff00 }), // нижняя сторона - желтая
+            new THREE.MeshPhongMaterial({ color: 0xff00ff }), // передняя сторона - пурпурная
+            new THREE.MeshPhongMaterial({ color: 0x00ffff })  // задняя сторона - голубая
+        ];
+
+        const cube = new THREE.Mesh(geometry, materials);
+        scene.add(cube);
+        
+        // Создаем координатные оси для наглядности
+        const axesHelper = new THREE.AxesHelper(10);
+        scene.add(axesHelper);
+
+        // Позиция камеры
+        camera.position.z = 10;
+
+        // Обработка изменения размера окна
+        window.addEventListener('resize', () => {
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            renderer.setSize(width, height);
+            camera.aspect = width / height;
+            camera.updateProjectionMatrix();
+        });
+
+        // Функция обновления данных с сервера
+        function updateSensorData() {
+            fetch('/sensor_data')
+                .then(response => response.json())
+                .then(data => {
+                    // Обновляем текстовую информацию
+                    document.getElementById('accel-x').textContent = data.acceleration.x + ' м/с²';
+                    document.getElementById('accel-y').textContent = data.acceleration.y + ' м/с²';
+                    document.getElementById('accel-z').textContent = data.acceleration.z + ' м/с²';
+                    document.getElementById('gyro-x').textContent = data.gyro.x + ' °/с';
+                    document.getElementById('gyro-y').textContent = data.gyro.y + ' °/с';
+                    document.getElementById('gyro-z').textContent = data.gyro.z + ' °/с';
+                    document.getElementById('roll').textContent = data.angles.roll + '°';
+                    document.getElementById('pitch').textContent = data.angles.pitch + '°';
+                    document.getElementById('temp').textContent = data.temperature + ' °C';
+                    
+                    // Обновляем положение куба
+                    // Сбрасываем предыдущие вращения
+                    cube.rotation.set(0, 0, 0);
+                    
+                    // Применяем новые вращения
+                    // Преобразуем градусы в радианы
+                    const rollRad = data.angles.roll * Math.PI / 180;
+                    const pitchRad = data.angles.pitch * Math.PI / 180;
+                    
+                    // Применяем вращение с использованием матрицы поворота
+                    // для сохранения правильного порядка вращения
+                    cube.rotateZ(rollRad);  // Вращение вокруг оси Z (Roll)
+                    cube.rotateX(pitchRad); // Вращение вокруг оси X (Pitch)
+                })
+                .catch(error => console.error('Ошибка получения данных:', error));
+        }
+
+        // Функция анимации сцены
+        function animate() {
+            requestAnimationFrame(animate);
+            renderer.render(scene, camera);
+        }
+        
+        // Запускаем анимацию
+        animate();
+        
+        // Обновляем данные каждые 100 мс
+        setInterval(updateSensorData, 100);
+    </script>
+</body>
+</html>

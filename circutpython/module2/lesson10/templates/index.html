@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Матричная клавиатура</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .panel {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            background-color: #f9f9f9;
+        }
+        .input-display {
+            font-size: 24px;
+            text-align: center;
+            padding: 10px;
+            background-color: #333;
+            color: #fff;
+            border-radius: 5px;
+            font-family: monospace;
+            letter-spacing: 2px;
+            height: 40px;
+            line-height: 40px;
+        }
+        .history {
+            height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            padding: 10px;
+            background-color: #fff;
+        }
+        .history-item {
+            padding: 5px;
+            border-bottom: 1px solid #eee;
+        }
+        .history-item:nth-child(odd) {
+            background-color: #f5f5f5;
+        }
+        .keypad-instruction {
+            text-align: center;
+            color: #666;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <h1>Матричная клавиатура 4x4</h1>
+    
+    <div class="container">
+        <div class="panel">
+            <h2>Текущий ввод:</h2>
+            <div class="input-display" id="current-input">_</div>
+            <p class="keypad-instruction">* - очистить ввод, # - подтвердить ввод</p>
+        </div>
+        
+        <div class="panel">
+            <h2>История нажатий клавиш:</h2>
+            <div class="history" id="history"></div>
+        </div>
+    </div>
+
+    <script>
+        // Функция для обновления данных с сервера
+        function updateKeypadData() {
+            fetch('/api/keypad-state')
+                .then(response => response.json())
+                .then(data => {
+                    // Обновляем текущий ввод
+                    const inputDisplay = document.getElementById('current-input');
+                    inputDisplay.textContent = data.current_input || '_';
+                    
+                    // Обновляем историю нажатий
+                    const historyContainer = document.getElementById('history');
+                    historyContainer.innerHTML = '';
+                    
+                    // Добавляем элементы истории в обратном порядке (новые сверху)
+                    data.history.slice().reverse().forEach(item => {
+                        const historyItem = document.createElement('div');
+                        historyItem.className = 'history-item';
+                        historyItem.textContent = item;
+                        historyContainer.appendChild(historyItem);
+                    });
+                })
+                .catch(error => {
+                    console.error('Ошибка получения данных:', error);
+                });
+        }
+        
+        // Обновляем данные сразу при загрузке страницы
+        updateKeypadData();
+        
+        // Затем обновляем каждую секунду
+        setInterval(updateKeypadData, 1000);
+    </script>
+</body>
+</html>

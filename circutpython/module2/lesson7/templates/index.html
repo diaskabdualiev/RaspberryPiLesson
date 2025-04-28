@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Ультразвуковой датчик HC-SR04</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="refresh" content="2">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .distance-display {
+            margin: 30px 0;
+            position: relative;
+        }
+        .distance-value {
+            font-size: 4em;
+            font-weight: bold;
+            color: #2196F3;
+            margin: 20px 0;
+        }
+        .distance-unit {
+            font-size: 1.5em;
+            color: #666;
+        }
+        .progress-bar {
+            height: 30px;
+            background-color: #e0e0e0;
+            border-radius: 15px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #2196F3, #03A9F4);
+            border-radius: 15px;
+            transition: width 0.5s ease-in-out;
+        }
+        .min-max {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 5px;
+            color: #666;
+        }
+        .status {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 4px;
+            background-color: #f0f0f0;
+            color: #333;
+        }
+        .last-update {
+            margin-top: 15px;
+            color: #888;
+            font-size: 0.9em;
+        }
+        .info {
+            margin-top: 30px;
+            color: #666;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Ультразвуковой датчик HC-SR04</h1>
+        
+        <div class="distance-display">
+            <div class="distance-value">
+                {{ distance }} <span class="distance-unit">см</span>
+            </div>
+            
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: {{ percentage }}%"></div>
+            </div>
+            
+            <div class="min-max">
+                <span>0 см</span>
+                <span>350 см</span>
+            </div>
+        </div>
+        
+        <div class="status">
+            <p>Статус: {{ status }}</p>
+        </div>
+        
+        <div class="last-update">
+            <p>Последнее обновление: {{ last_update }}</p>
+        </div>
+        
+        <div class="info">
+            <p>Страница обновляется автоматически каждые 2 секунды</p>
+            <p>Максимальная дальность датчика HC-SR04: около 350 см</p>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Управление сервоприводами</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .control-panel {
+            background-color: #fff;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        select, input[type="range"] {
+            width: 100%;
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+        .slider-container {
+            display: flex;
+            align-items: center;
+            margin-top: 15px;
+        }
+        .slider {
+            flex-grow: 1;
+        }
+        .slider-value {
+            width: 60px;
+            text-align: center;
+            font-weight: bold;
+            margin-left: 15px;
+        }
+        .button-group {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        button {
+            padding: 10px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        button.reset-btn {
+            background-color: #f44336;
+        }
+        button.reset-btn:hover {
+            background-color: #d32f2f;
+        }
+        button.preset-btn {
+            background-color: #2196F3;
+        }
+        button.preset-btn:hover {
+            background-color: #0b7dda;
+        }
+        .status {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 5px;
+            display: none;
+        }
+        .success {
+            background-color: #dff0d8;
+            color: #3c763d;
+        }
+        .error {
+            background-color: #f2dede;
+            color: #a94442;
+        }
+        .servo-visual {
+            width: 200px;
+            height: 200px;
+            margin: 30px auto;
+            position: relative;
+        }
+        .servo-base {
+            width: 100px;
+            height: 20px;
+            background-color: #555;
+            position: absolute;
+            left: 50px;
+            bottom: 0;
+            border-radius: 5px;
+        }
+        .servo-arm {
+            width: 10px;
+            height: 100px;
+            background-color: #888;
+            position: absolute;
+            bottom: 20px;
+            left: 95px;
+            transform-origin: bottom center;
+            transition: transform 0.3s;
+        }
+        .presets {
+            margin-top: 20px;
+            display: flex;
+            justify-content: space-between;
+        }
+    </style>
+</head>
+<body>
+    <h1>Управление сервоприводами</h1>
+    
+    <div class="control-panel">
+        <div class="form-group">
+            <label for="channel">Выберите канал сервопривода:</label>
+            <select id="channel">
+                <!-- Каналы будут добавлены JavaScript -->
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="angle">Управление углом (0-180°):</label>
+            <div class="slider-container">
+                <input type="range" id="angle" class="slider" min="0" max="180" value="90" step="1">
+                <div class="slider-value" id="angle-value">90°</div>
+            </div>
+        </div>
+        
+        <div class="servo-visual">
+            <div class="servo-base"></div>
+            <div class="servo-arm" id="servo-arm"></div>
+        </div>
+        
+        <div class="presets">
+            <button class="preset-btn" data-angle="0">0°</button>
+            <button class="preset-btn" data-angle="45">45°</button>
+            <button class="preset-btn" data-angle="90">90°</button>
+            <button class="preset-btn" data-angle="135">135°</button>
+            <button class="preset-btn" data-angle="180">180°</button>
+        </div>
+        
+        <div class="button-group">
+            <button id="reset-btn" class="reset-btn">Сбросить все сервоприводы</button>
+        </div>
+        
+        <div class="status" id="status"></div>
+    </div>
+    
+    <script>
+        // Получаем максимальное количество сервоприводов из серверной конфигурации
+        const maxServos = {{ max_servos }};
+        
+        // DOM-элементы
+        const channelSelect = document.getElementById('channel');
+        const angleSlider = document.getElementById('angle');
+        const angleValue = document.getElementById('angle-value');
+        const servoArm = document.getElementById('servo-arm');
+        const resetBtn = document.getElementById('reset-btn');
+        const statusDiv = document.getElementById('status');
+        const presetBtns = document.querySelectorAll('.preset-btn');
+        
+        // Заполняем выпадающий список каналов
+        for (let i = 0; i < maxServos; i++) {
+            const option = document.createElement('option');
+            option.value = i;
+            option.textContent = `Канал ${i}`;
+            channelSelect.appendChild(option);
+        }
+        
+        // Обновление визуального представления сервопривода
+        function updateServoVisual(angle) {
+            servoArm.style.transform = `rotate(${angle}deg)`;
+        }
+        
+        // Функция для установки угла сервопривода
+        function setServoAngle(channel, angle) {
+            fetch('/set_angle', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    channel: channel,
+                    angle: angle
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    showStatus(data.message, 'success');
+                } else {
+                    showStatus(data.message, 'error');
+                }
+            })
+            .catch(error => {
+                showStatus(`Ошибка: ${error}`, 'error');
+            });
+        }
+        
+        // Функция для получения текущего угла сервопривода
+        function getServoAngle(channel) {
+            fetch(`/get_angle?channel=${channel}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    // Обновляем слайдер и отображение
+                    angleSlider.value = data.angle;
+                    angleValue.textContent = `${data.angle}°`;
+                    updateServoVisual(data.angle);
+                }
+            })
+            .catch(error => {
+                console.error('Ошибка при получении угла:', error);
+            });
+        }
+        
+        // Функция сброса всех сервоприводов
+        function resetAllServos() {
+            fetch('/reset', {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    showStatus(data.message, 'success');
+                    // Обновляем текущий слайдер
+                    angleSlider.value = 90;
+                    angleValue.textContent = '90°';
+                    updateServoVisual(90);
+                } else {
+                    showStatus(data.message, 'error');
+                }
+            })
+            .catch(error => {
+                showStatus(`Ошибка: ${error}`, 'error');
+            });
+        }
+        
+        // Функция для отображения статусных сообщений
+        function showStatus(message, type) {
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${type}`;
+            statusDiv.style.display = 'block';
+            
+            // Скрываем сообщение через 5 секунд
+            setTimeout(() => {
+                statusDiv.style.display = 'none';
+            }, 5000);
+        }
+        
+        // Обработчик изменения выбранного канала
+        channelSelect.addEventListener('change', () => {
+            getServoAngle(channelSelect.value);
+        });
+        
+        // Обработчик изменения значения слайдера
+        angleSlider.addEventListener('input', () => {
+            const angle = parseInt(angleSlider.value);
+            angleValue.textContent = `${angle}°`;
+            updateServoVisual(angle);
+        });
+        
+        // Обработчик отпускания слайдера (чтобы не посылать запросы каждую миллисекунду)
+        angleSlider.addEventListener('change', () => {
+            const channel = parseInt(channelSelect.value);
+            const angle = parseInt(angleSlider.value);
+            setServoAngle(channel, angle);
+        });
+        
+        // Обработчик нажатия на кнопку сброса
+        resetBtn.addEventListener('click', resetAllServos);
+        
+        // Обработчики для кнопок предустановленных углов
+        presetBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const angle = parseInt(btn.dataset.angle);
+                const channel = parseInt(channelSelect.value);
+                
+                // Обновляем слайдер и отображение
+                angleSlider.value = angle;
+                angleValue.textContent = `${angle}°`;
+                updateServoVisual(angle);
+                
+                // Отправляем команду на сервер
+                setServoAngle(channel, angle);
+            });
+        });
+        
+        // Инициализация - получаем текущий угол выбранного канала
+        getServoAngle(channelSelect.value);
+    </script>
+</body>
+</html>

@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Управление зуммером - Мелодии</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .button-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        button {
+            padding: 15px 25px;
+            font-size: 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            color: white;
+            background-color: #2196F3;
+            margin: 5px;
+            min-width: 200px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #0b7dda;
+        }
+        .twinkle {
+            background-color: #4CAF50;
+        }
+        .scale {
+            background-color: #FF9800;
+        }
+        .custom {
+            background-color: #9C27B0;
+        }
+        .stop {
+            background-color: #F44336;
+        }
+        .note-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 5px;
+            margin: 20px 0;
+        }
+        .note-button {
+            padding: 10px;
+            min-width: 50px;
+            background-color: #673AB7;
+        }
+        .note-button:hover {
+            background-color: #5e35b1;
+        }
+        .status {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 4px;
+            background-color: #f0f0f0;
+            font-size: 16px;
+        }
+        .notes-title {
+            margin-top: 30px;
+            font-size: 18px;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Управление мелодиями</h1>
+        
+        <div class="button-container">
+            <a href="/play/twinkle"><button class="twinkle">Маленькая звездочка</button></a>
+            <a href="/play/scale"><button class="scale">Гамма</button></a>
+            <a href="/stop"><button class="stop">Стоп</button></a>
+        </div>
+        
+        <div class="status">
+            <p>Статус: {{ status }}</p>
+        </div>
+        
+        <p class="notes-title">Отдельные ноты:</p>
+        <div class="note-buttons">
+            <a href="/note/C4"><button class="note-button">До</button></a>
+            <a href="/note/D4"><button class="note-button">Ре</button></a>
+            <a href="/note/E4"><button class="note-button">Ми</button></a>
+            <a href="/note/F4"><button class="note-button">Фа</button></a>
+            <a href="/note/G4"><button class="note-button">Соль</button></a>
+            <a href="/note/A4"><button class="note-button">Ля</button></a>
+            <a href="/note/B4"><button class="note-button">Си</button></a>
+            <a href="/note/C5"><button class="note-button">До⁵</button></a>
+        </div>
+    </div>
+</body>
+</html>

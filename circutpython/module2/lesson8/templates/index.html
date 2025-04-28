@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Управление сервоприводом</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: center;
+        }
+        .container {
+            margin-top: 50px;
+        }
+        .slider-container {
+            margin: 30px 0;
+        }
+        #angle-slider {
+            width: 80%;
+        }
+        .angle-display {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+        .buttons {
+            margin: 20px 0;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 0 10px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Управление сервоприводом</h1>
+        
+        <div class="slider-container">
+            <input type="range" min="0" max="180" value="90" id="angle-slider">
+        </div>
+        
+        <div class="angle-display">
+            Угол: <span id="angle-value">90</span>°
+        </div>
+        
+        <div class="buttons">
+            <button onclick="setAngle(0)">0°</button>
+            <button onclick="setAngle(90)">90°</button>
+            <button onclick="setAngle(180)">180°</button>
+        </div>
+    </div>
+
+    <script>
+        const slider = document.getElementById('angle-slider');
+        const angleValue = document.getElementById('angle-value');
+        
+        // Инициализация значения слайдера при загрузке страницы
+        window.onload = function() {
+            fetch('/get_angle')
+                .then(response => response.json())
+                .then(data => {
+                    slider.value = data.angle;
+                    angleValue.textContent = data.angle;
+                });
+        };
+        
+        // Обновление значения при перемещении слайдера
+        slider.oninput = function() {
+            angleValue.textContent = this.value;
+        };
+        
+        // Отправка нового значения угла на сервер при отпускании слайдера
+        slider.onchange = function() {
+            sendAngle(this.value);
+        };
+        
+        // Функция для установки фиксированного угла кнопками
+        function setAngle(angle) {
+            slider.value = angle;
+            angleValue.textContent = angle;
+            sendAngle(angle);
+        }
+        
+        // Отправка угла на сервер
+        function sendAngle(angle) {
+            fetch('/set_angle', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ angle: parseInt(angle) })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Угол установлен:', data.angle);
+            })
+            .catch(error => {
+                console.error('Ошибка:', error);
+            });
+        }
+    </script>
+</body>
+</html>

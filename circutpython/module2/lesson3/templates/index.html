@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Управление RGB светодиодом</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        .button-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        button {
+            padding: 15px 25px;
+            font-size: 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            color: white;
+            margin: 5px;
+        }
+        .red {
+            background-color: #ff4444;
+        }
+        .green {
+            background-color: #44ff44;
+            color: black;
+        }
+        .blue {
+            background-color: #4444ff;
+        }
+        .off {
+            background-color: #333;
+        }
+        .status {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 4px;
+            background-color: #f0f0f0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Управление RGB светодиодом</h1>
+    
+    <div class="button-container">
+        <a href="/color/red"><button class="red">Красный</button></a>
+        <a href="/color/green"><button class="green">Зеленый</button></a>
+        <a href="/color/blue"><button class="blue">Синий</button></a>
+        <a href="/color/off"><button class="off">Выключить</button></a>
+    </div>
+    
+    <div class="status">
+        <p>Текущий цвет: {{ current_color }}</p>
+    </div>
+</body>
+</html>
